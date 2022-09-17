@@ -1,2 +1,2 @@
 # retail-customer-segmentation-analysis
-Retail Customer Segmentation Analysis
+Portfolio Retail Customer Segmentation Analysis
