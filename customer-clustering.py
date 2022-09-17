@@ -1,20 +1,28 @@
 # import libraries
 import pandas as pd
 import seaborn as sns
+<<<<<<< HEAD
 import matplotlib.pyplot as plt
+=======
+>>>>>>> ed711e9abce2110b1b506118218d873532ebe9ed
 import numpy as np
 
 # load data
 path = 'https://github.com/knmukai/retail-customer-segmentation-analysis/blob/main/marketing_campaign.csv?raw=true'
 df = pd.read_csv(path, sep = ';')
+<<<<<<< HEAD
 print("preview dos dados")
 print(df.head(5))
 print("tipo dos dados")
+=======
+print(df.head(5))
+>>>>>>> ed711e9abce2110b1b506118218d873532ebe9ed
 print(df.info())
 
 # data preprocessing
 df_processed = df
 
+<<<<<<< HEAD
 df_processed = df_processed.drop(['Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
 'AcceptedCmp1', 'AcceptedCmp2', 'Response', 'Z_CostContact', 'Z_Revenue', ], axis=1) #drop colunas desnecessarias
 print("colunas utilizadas")
@@ -54,3 +62,20 @@ print(df_processed.isna().sum()) #Income com valores faltantes
 #df_dummies = pd.get_dummies(data=df_processed, drop_first=True)
 #print(df_dummies.info())
 #print(df_dummies.head())
+=======
+print(df_processed.isna().sum()) #Income com valores faltantes
+
+print(df_processed.groupby(['Education'])['Education'].count())
+print(df_processed.groupby(['Marital_Status'])['Marital_Status'].count())
+
+print(df.groupby(['Education'])['Income'].mean())
+df['Income'].fillna(df.groupby('Education')['Income'].transform('mean'), inplace = True) #substituir valores na pela media por Education
+
+df_processed = df_processed.drop(['Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
+'AcceptedCmp1', 'AcceptedCmp2', 'Response', 'Z_CostContact', 'Z_Revenue', ], axis=1) #drop colunas desnecessarias
+print(df_processed.info())
+
+df_dummies = pd.get_dummies(data=df_processed, drop_first=True)
+print(df_dummies.info())
+print(df_dummies.head())
+>>>>>>> ed711e9abce2110b1b506118218d873532ebe9ed
