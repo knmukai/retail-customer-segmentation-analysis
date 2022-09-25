@@ -3,6 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
 # load data
 path = 'https://github.com/knmukai/retail-customer-segmentation-analysis/blob/main/marketing_campaign.csv?raw=true'
@@ -41,7 +42,7 @@ plt.subplot(3, 2, 5)
 sns.histplot(x = df_processed["Kidhome"])
 plt.subplot(3, 2, 6)
 sns.histplot(x = df_processed["Teenhome"])
-plt.show()
+#plt.show()
 
 print("substituir status marital Alone, Absurd e YOLO por Single e Widow por Divorced")
 print(df_processed['Marital_Status'].value_counts())
@@ -69,7 +70,16 @@ plt.subplot(2, 2, 1)
 sns.histplot(x = df_processed["Year_Birth"])
 plt.subplot(2, 2, 2)
 sns.histplot(x = df_processed["Income"])
-plt.show()
+#plt.show()
+
+print("codificacao das colunas categoricas")
+df_encoded = df_processed
+le = LabelEncoder() 
+df_encoded['Education'] = le.fit_transform(df_encoded['Education'])
+df_encoded['Marital_Status'] = le.fit_transform(df_encoded['Marital_Status'])
+print(df_encoded.head(5))
+
+print("normatização")
 
 #df_dummies = pd.get_dummies(data=df_processed, drop_first=True)
 #print(df_dummies.info())
