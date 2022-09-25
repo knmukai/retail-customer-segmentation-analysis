@@ -15,8 +15,9 @@ print(df.info())
 # data preprocessing
 df_processed = df
 
-df_processed = df_processed.drop(['Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
-'AcceptedCmp1', 'AcceptedCmp2', 'Response', 'Z_CostContact', 'Z_Revenue', ], axis=1) #drop colunas desnecessarias
+df_processed = df_processed.drop(['ID', 'Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
+'AcceptedCmp1', 'AcceptedCmp2', 'Response', 'Z_CostContact', 'NumDealsPurchases','NumWebPurchases', 'Z_Revenue',
+'NumCatalogPurchases', 'NumStorePurchases', 'NumWebVisitsMonth'], axis=1) #drop colunas desnecessarias
 print("colunas utilizadas")
 print(df_processed.info())
 
@@ -42,6 +43,17 @@ plt.subplot(3, 2, 6)
 sns.histplot(x = df_processed["Teenhome"])
 plt.show()
 
+print("substituir status marital Alone, Absurd e YOLO por Single e Widow por Divorced")
+print(df_processed['Marital_Status'].value_counts())
+df_processed['Marital_Status'].replace(['Alone','Absurd','YOLO'], 'Single', inplace=True)
+df_processed['Marital_Status'].replace(['Widow'], 'Divorced', inplace=True)
+print(df_processed['Marital_Status'].value_counts())
+
+print('sinalizar apenas se possui ou não filhos')
+df_processed['Childhome'] = np.where((df_processed['Kidhome'] == 0) | (df_processed['Teenhome'] == 0), 0, 1)
+df_processed = df_processed.drop(['Kidhome', 'Teenhome'], axis=1) #drop colunas de filhos
+print(df_processed['Childhome'].value_counts())
+
 print("media da renda por nivel de educacao")
 print(df.groupby(['Education'])['Income'].mean())
 df['Income'].fillna(df.groupby('Education')['Income'].transform('mean'), inplace = True) #substituir valores na pela media por Education
@@ -58,6 +70,7 @@ sns.histplot(x = df_processed["Year_Birth"])
 plt.subplot(2, 2, 2)
 sns.histplot(x = df_processed["Income"])
 plt.show()
+
 #df_dummies = pd.get_dummies(data=df_processed, drop_first=True)
 #print(df_dummies.info())
 #print(df_dummies.head())
