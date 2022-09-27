@@ -76,7 +76,7 @@ sns.histplot(x = df_processed["Income"])
 plt.show()
 
 print("codificacao das colunas categoricas")
-df_encoded = df_processed
+df_encoded = df_processed.copy()
 le = LabelEncoder() 
 df_encoded['Education'] = le.fit_transform(df_encoded['Education'])
 df_encoded['Marital_Status'] = le.fit_transform(df_encoded['Marital_Status'])
@@ -115,3 +115,17 @@ sil_visualizer = SilhouetteVisualizer(kmeans, colors='yellowbrick')
 sil_visualizer.fit(df_encoded)    
 sil_visualizer.show() 
 print("pelo elbow k=4, pelo silhouette k=2. Definido k=3")
+
+print("k-means clustering")
+kmeans = KMeans(n_clusters=3, init="k-means++")
+kmeans.fit(df_encoded)
+df_processed['cluster']=kmeans.labels_
+print(df_processed.head(5))
+
+x=df_encoded.iloc[:,2]
+y=df_encoded.iloc[:,3]
+z=df_encoded.iloc[:,4]
+fig = plt.figure(figsize=(20,10))
+plot3d = fig.add_subplot(111, projection='3d')
+plot3d.scatter(x,y,z, c= kmeans.labels_)
+plt.show()
