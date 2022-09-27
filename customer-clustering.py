@@ -3,7 +3,10 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+from sklearn.cluster import KMeans
+from yellowbrick.cluster import KElbowVisualizer, SilhouetteVisualizer
+from sklearn.metrics import silhouette_score
 
 # load data
 path = 'https://github.com/knmukai/retail-customer-segmentation-analysis/blob/main/marketing_campaign.csv?raw=true'
@@ -42,7 +45,7 @@ plt.subplot(3, 2, 5)
 sns.histplot(x = df_processed["Kidhome"])
 plt.subplot(3, 2, 6)
 sns.histplot(x = df_processed["Teenhome"])
-#plt.show()
+plt.show()
 
 print("substituir status marital Alone, Absurd e YOLO por Single e Widow por Divorced")
 print(df_processed['Marital_Status'].value_counts())
@@ -70,7 +73,7 @@ plt.subplot(2, 2, 1)
 sns.histplot(x = df_processed["Year_Birth"])
 plt.subplot(2, 2, 2)
 sns.histplot(x = df_processed["Income"])
-#plt.show()
+plt.show()
 
 print("codificacao das colunas categoricas")
 df_encoded = df_processed
@@ -80,7 +83,35 @@ df_encoded['Marital_Status'] = le.fit_transform(df_encoded['Marital_Status'])
 print(df_encoded.head(5))
 
 print("normatização")
+min_max_scaler = MinMaxScaler()
+df_encoded[df_encoded.columns] = min_max_scaler.fit_transform(df_encoded)
+print(df_encoded.head(5))
 
-#df_dummies = pd.get_dummies(data=df_processed, drop_first=True)
-#print(df_dummies.info())
-#print(df_dummies.head())
+print("definição do numero de clusters")
+print("elbow method")
+
+
+kmeans = KMeans(random_state=42)
+elb_visualizer = KElbowVisualizer(kmeans, k=(1,15))
+elb_visualizer.fit(df_encoded)    
+elb_visualizer.show() 
+
+print("silhouette method")
+silhouette_coefficients = []
+
+for k in range(2, 15):
+    kmeans = KMeans(n_clusters=k, init="k-means++")
+    kmeans.fit(df_encoded)
+    score = silhouette_score(df_encoded, kmeans.labels_)
+    silhouette_coefficients.append(score)
+plt.plot(range(2, 15), silhouette_coefficients)
+plt.xticks(range(2, 15))
+plt.xlabel("Number of Clusters")
+plt.ylabel("Silhouette Coefficient")
+plt.show()
+
+kmeans = KMeans(n_clusters = 3, random_state=42)
+sil_visualizer = SilhouetteVisualizer(kmeans, colors='yellowbrick')
+sil_visualizer.fit(df_encoded)    
+sil_visualizer.show() 
+print("pelo elbow k=4, pelo silhouette k=2. Definido k=3")
