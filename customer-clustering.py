@@ -9,27 +9,63 @@ from yellowbrick.cluster import KElbowVisualizer, SilhouetteVisualizer
 from sklearn.metrics import silhouette_score
 
 # load data
+
+# voce pode definir funcoes para facilitar a utilizacao da mesma analise futuramente ou por 
+# outras pessoas
+# mesmo que vc utilize essa funcao apenas uma vez neste script, ter ela definida eh uma boa pratica 
+# em DS. Nos desenvolvemos em notebook mas depois pra colocar o modelo em producao a gente 
+# implementa por meio de scripts python aproveitando as funcoes que desenvolvemos no notebook
+
+def load_data(path):
+    
+    df = pd.read_csv(path, sep = ';')
+    
+    return df
+
 path = 'https://github.com/knmukai/retail-customer-segmentation-analysis/blob/main/marketing_campaign.csv?raw=true'
-df = pd.read_csv(path, sep = ';')
-print("preview dos dados")
-print(df.head(5))
-print("tipo dos dados")
-print(df.info())
+df = load_data(path)
+
+def visualize_df_data(df):    
+    print("preview dos dados")
+    print(df.head(5))
+    print("tipo dos dados")
+    print(df.info())
+
+visualize_df_data(df)
 
 # data preprocessing
-df_processed = df
 
-df_processed = df_processed.drop(['ID', 'Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
+
+def get_processed_df(df, columns_to_drop):
+    
+    df_processed = df.drop(columns_to_drop, axis=1) #drop colunas desnecessarias
+    
+    return df_processed
+
+columns_to_drop = ['ID', 'Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
 'AcceptedCmp1', 'AcceptedCmp2', 'Response', 'Z_CostContact', 'NumDealsPurchases','NumWebPurchases', 'Z_Revenue',
-'NumCatalogPurchases', 'NumStorePurchases', 'NumWebVisitsMonth'], axis=1) #drop colunas desnecessarias
-print("colunas utilizadas")
-print(df_processed.info())
+'NumCatalogPurchases', 'NumStorePurchases', 'NumWebVisitsMonth']
 
-print("caracteristica das variaveis")
-df_processed.select_dtypes('number').describe().transpose() #caracteristica das variaveis numericas
+df_processed = get_processed_df(df, columns_to_drop)
 
-print("visulizar colunas com valores faltantes")
-print(df_processed.isna().sum()) #Income com valores faltantes
+# df_processed = df
+
+# df_processed = df_processed.drop(['ID', 'Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
+# 'AcceptedCmp1', 'AcceptedCmp2', 'Response', 'Z_CostContact', 'NumDealsPurchases','NumWebPurchases', 'Z_Revenue',
+# 'NumCatalogPurchases', 'NumStorePurchases', 'NumWebVisitsMonth'], axis=1) #drop colunas desnecessarias
+
+def get_df_stats(df):
+    
+    print("colunas utilizadas")
+    print(df.info())
+
+    print("caracteristica das variaveis")
+    df.select_dtypes('number').describe().transpose() #caracteristica das variaveis numericas
+
+    print("visulizar colunas com valores faltantes")
+    print(df.isna().sum()) #Income com valores faltantes
+    
+get_df_stats(df_processed)
 
 print("visualizar caracteristica dos clientes")
 sns.set(font_scale=0.6) #diminuir tamanho da fonte
@@ -47,6 +83,8 @@ plt.subplot(3, 2, 6)
 sns.histplot(x = df_processed["Teenhome"])
 plt.show()
 
+#############################################################################################
+# Avaliar se esse bloco de codigo poderia estar dentro da funcao get_processed_df
 print("substituir status marital Alone, Absurd e YOLO por Single e Widow por Divorced")
 print(df_processed['Marital_Status'].value_counts())
 df_processed['Marital_Status'].replace(['Alone','Absurd','YOLO'], 'Single', inplace=True)
@@ -68,6 +106,8 @@ print(df_processed.isna().sum()) #Income com valores faltantes
 print("qtd de registros antes da remocao de outliers:"+str(len(df_processed)))
 df_processed = df_processed[(df_processed['Year_Birth']>=1940) & (df_processed['Income']<=100000)].reset_index()
 print("qtd de registros antes da remocao de outliers:"+str(len(df_processed)))
+#############################################################################################
+
 sns.set(font_scale=0.6) #diminuir tamanho da fonte
 plt.subplot(2, 2, 1)
 sns.histplot(x = df_processed["Year_Birth"])
