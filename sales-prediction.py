@@ -46,8 +46,8 @@ df_processed = df_processed.drop(['Kidhome', 'Teenhome'], axis=1) #drop colunas 
 print(df_processed['Childhome'].value_counts())
 
 print("media da renda por nivel de educacao")
-print(df.groupby(['Education'])['Income'].mean())
-df['Income'].fillna(df.groupby('Education')['Income'].transform('mean'), inplace = True) #substituir valores na pela media por Education
+print(df_processed.groupby(['Education'])['Income'].mean())
+df_processed['Income'].fillna(df_processed.groupby('Education')['Income'].transform('mean'), inplace = True) #substituir valores na pela media por Education
 print("valores faltantes de renda substituidos pela media por nivel de educacao")
 print(df_processed.isna().sum()) #Income com valores faltantes
 
