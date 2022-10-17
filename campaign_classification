@@ -1,0 +1,138 @@
+# import libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+from sklearn.preprocessing import MinMaxScaler
+from datetime import date
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
+
+# load data
+path = 'https://github.com/knmukai/retail-customer-segmentation-analysis/blob/main/marketing_campaign.csv?raw=true'
+df = pd.read_csv(path, sep = ';')
+print("preview dos dados")
+print(df.head(5))
+print("tipo dos dados")
+print(df.info())
+
+# data preprocessing
+df_processed = df
+
+df_processed = df_processed.drop(['ID', 'Dt_Customer', 'Recency', 'Complain', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 
+'AcceptedCmp1', 'AcceptedCmp2', 'Z_CostContact', 'NumDealsPurchases','NumWebPurchases', 'Z_Revenue', 'MntWines', 'MntFruits', 'MntMeatProducts',
+'MntFishProducts', 'MntSweetProducts', 'MntGoldProds', 'NumCatalogPurchases', 'NumStorePurchases', 'NumWebVisitsMonth'], axis=1) #drop colunas desnecessarias
+print("colunas utilizadas")
+print(df_processed.info())
+
+print("caracteristica das variaveis")
+df_processed.select_dtypes('number').describe().transpose() #caracteristica das variaveis numericas
+
+print("visulizar colunas com valores faltantes")
+print(df_processed.isna().sum()) #Income com valores faltantes
+
+
+print("substituir status marital Alone, Absurd e YOLO por Single e Widow por Divorced")
+print(df_processed['Marital_Status'].value_counts())
+df_processed['Marital_Status'].replace(['Alone','Absurd','YOLO'], 'Single', inplace=True)
+df_processed['Marital_Status'].replace(['Widow'], 'Divorced', inplace=True)
+print(df_processed['Marital_Status'].value_counts())
+
+print('sinalizar apenas se possui ou não filhos')
+df_processed['Childhome'] = np.where((df_processed['Kidhome'] == 0) | (df_processed['Teenhome'] == 0), 0, 1)
+df_processed = df_processed.drop(['Kidhome', 'Teenhome'], axis=1) #drop colunas de filhos
+print(df_processed['Childhome'].value_counts())
+
+print("media da renda por nivel de educacao")
+print(df.groupby(['Education'])['Income'].mean())
+df['Income'].fillna(df.groupby('Education')['Income'].transform('mean'), inplace = True) #substituir valores na pela media por Education
+print("valores faltantes de renda substituidos pela media por nivel de educacao")
+print(df_processed.isna().sum()) #Income com valores faltantes
+
+# remoção de outliers
+print("qtd de registros antes da remocao de outliers:"+str(len(df_processed)))
+df_processed = df_processed[(df_processed['Year_Birth']>=1940) & (df_processed['Income']<=100000)].reset_index()
+print("qtd de registros depois da remocao de outliers:"+str(len(df_processed)))
+
+df_processed.insert(6,'age', date.today().year-df_processed['Year_Birth'])
+df_processed = df_processed.drop(['Year_Birth'], axis=1) 
+df_processed = df_processed.drop(['index'], axis=1) 
+print(df_processed.head(5))
+
+print('engajamento na ultima campanha')
+print(df_processed['Response'].value_counts())
+
+print('transformar variaveis categoricas em dummies')
+df_dummies = pd.get_dummies(data=df_processed, drop_first=True)
+print(df_dummies.head(5))
+
+
+features = df_dummies.columns.drop('Response')
+target = ['Response']
+
+X = df_dummies[features].values
+y = df_dummies[target].values
+split_test_size = 0.30
+
+print(features.array)
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = split_test_size, random_state=8)
+
+print('Variáveis explicativas de treino:', X_train.shape)
+print('Variáveis explicativas de teste:', X_test.shape)
+print('Variável alvo de treino:', y_train.shape)
+print('Variável alvo de teste:', y_test.shape)
+
+print("normatização")
+
+fscaler = MinMaxScaler()
+X_train = fscaler.fit_transform(X_train)
+X_test = fscaler.transform(X_test)
+
+clf = DecisionTreeClassifier(random_state=0)
+clf.fit(X_train, y_train)
+
+predictions = clf.predict(X_test)
+
+print('acc: ', accuracy_score(y_test, predictions))
+
+matrix = confusion_matrix(y_test, predictions)
+sns.heatmap(matrix, annot=True, fmt='', cbar = False)
+plt.xlabel("Predicted Result")
+plt.ylabel("Actual Result")
+plt.show()
+
+#tree.plot_tree(clf)
+#plt.show()
+
+importances = clf.feature_importances_
+sorted_idx = clf.feature_importances_.argsort()
+
+fig, ax = plt.subplots()
+ax.barh(range(len(importances)), importances[sorted_idx])
+ax.set_yticks(range(len(importances)))
+_ = ax.set_yticklabels(np.array(df_dummies.columns.drop('Response'))[sorted_idx])
+plt.xlabel("Feature Importance")
+plt.show()
+print('age e income são as features mais relevantes')
+
+#Nearest Neighbors Classification
+clf = KNeighborsClassifier() #default n_neighbor=5
+clf.fit(X_train, y_train)
+
+predictions = clf.predict(X_test)
+
+print('acc: ', accuracy_score(y_test, predictions))
+
+matrix = confusion_matrix(y_test, predictions)
+sns.heatmap(matrix, annot=True, fmt='', cbar = False)
+plt.xlabel("Predicted Result")
+plt.ylabel("Actual Result")
+plt.show()
+
+print('metodo Nearest Neighbors Classification teve melhor precisão')
